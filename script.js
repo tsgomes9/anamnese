@@ -1,416 +1,248 @@
-document.addEventListener('DOMContentLoaded', function() {
-    // Elementos do DOM
+document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('botoxForm');
-    const btnLimpar = document.getElementById('btnLimpar');
     const btnGerarPDF = document.getElementById('btnGerarPDF');
-
-    // Função para formatar data
-    function formatarData(dataString) {
-        if (!dataString) return '';
-        const data = new Date(dataString);
-        return data.toLocaleDateString('pt-BR');
-    }
-
-    // Função para calcular idade
-    function calcularIdade(dataNascimento) {
-        if (!dataNascimento) return '';
-        const hoje = new Date();
-        const nascimento = new Date(dataNascimento);
-        let idade = hoje.getFullYear() - nascimento.getFullYear();
-        const mes = hoje.getMonth() - nascimento.getMonth();
-        if (mes < 0 || (mes === 0 && hoje.getDate() < nascimento.getDate())) {
-            idade--;
+    const btnLimpar = document.getElementById('btnLimpar');
+    
+    // Botão Limpar
+    btnLimpar.addEventListener('click', () => {
+        if(confirm('Tem certeza que deseja limpar todo o formulário?')) {
+            form.reset();
+            window.scrollTo(0, 0);
         }
-        return idade;
-    }
+    });
 
-    // Função para criar o PDF
-    function gerarPDF() {
-        // Verificar campos obrigatórios
-        const camposObrigatorios = ['pacNome', 'pacCPF', 'pacNasc', 'pacTel', 'profNome', 'profRegistro', 'marca', 'lote', 'validade', 'qtdTotal'];
-        let formularioValido = true;
-        let primeiroCampoInvalido = null;
+    // Botão Gerar PDF
+    btnGerarPDF.addEventListener('click', async (e) => {
+        e.preventDefault();
 
-        camposObrigatorios.forEach(id => {
-            const campo = document.getElementById(id);
-            if (!campo.value.trim()) {
-                campo.style.borderColor = 'red';
-                formularioValido = false;
-                if (!primeiroCampoInvalido) primeiroCampoInvalido = campo;
-            } else {
-                campo.style.borderColor = '';
-            }
-        });
-
-        // Verificar checkbox de consentimento
-        const consentimento = document.getElementById('consentimento');
-        if (!consentimento.checked) {
-            alert('Você deve aceitar o termo de consentimento para gerar o documento.');
+        // Validação básica
+        if (!form.checkValidity()) {
+            alert('Por favor, preencha todos os campos obrigatórios e aceite o termo de consentimento.');
+            form.reportValidity();
             return;
         }
 
-        if (!formularioValido) {
-            alert('Por favor, preencha todos os campos obrigatórios (marcados com *).');
-            if (primeiroCampoInvalido) {
-                primeiroCampoInvalido.focus();
-            }
-            return;
-        }
-
-        // Coletar dados do formulário
-        const dados = {
-            // Dados do Paciente
-            paciente: {
-                nome: document.getElementById('pacNome').value,
-                cpf: document.getElementById('pacCPF').value,
-                nascimento: formatarData(document.getElementById('pacNasc').value),
-                idade: calcularIdade(document.getElementById('pacNasc').value),
-                telefone: document.getElementById('pacTel').value,
-                email: document.getElementById('pacEmail').value || 'Não informado',
-                endereco: document.getElementById('pacEndereco').value || 'Não informado'
-            },
-            // Dados do Profissional
-            profissional: {
-                nome: document.getElementById('profNome').value,
-                especialidade: document.getElementById('profEspecialidade').value || 'Não informada',
-                registro: document.getElementById('profRegistro').value,
-                clinica: document.getElementById('profClinica').value || 'Não informada',
-                endereco: document.getElementById('profEndereco').value || 'Não informado'
-            },
-            // Histórico Clínico
-            historico: {
-                alergias: document.getElementById('alergias').value || 'Nega',
-                medicamentos: document.getElementById('medicamentos').value || 'Nega',
-                doencas: document.getElementById('doencas').value || 'Nega',
-                historicoBotox: document.getElementById('historicoBotox').value || 'Nega',
-                reacoes: document.getElementById('reacoes').value || 'Nega'
-            },
-            // Aplicação
-            aplicacao: {
-                marca: document.getElementById('marca').value,
-                lote: document.getElementById('lote').value,
-                validade: formatarData(document.getElementById('validade').value),
-                qtdTotal: document.getElementById('qtdTotal').value + ' UI'
-            },
-            // Regiões
-            regioes: {
-                testa: document.getElementById('regTesta').value || '0',
-                glabela: document.getElementById('regGlabela').value || '0',
-                peDir: document.getElementById('regPeDir').value || '0',
-                peEsq: document.getElementById('regPeEsq').value || '0',
-                masseterDir: document.getElementById('regMasseterDir').value || '0',
-                masseterEsq: document.getElementById('regMasseterEsq').value || '0',
-                mento: document.getElementById('regMento').value || '0',
-                outras: document.getElementById('regOutras').value || '-'
-            },
-            observacoes: document.getElementById('observacoes').value || 'Nenhuma observação registrada.'
-        };
-
-        // Criar PDF
         const { jsPDF } = window.jspdf;
-        const doc = new jsPDF({
-            orientation: 'portrait',
-            unit: 'mm',
-            format: 'a4'
-        });
+        const doc = new jsPDF();
 
-        // Configurações de estilo
-        const margemEsquerda = 20;
-        const margemDireita = 190;
-        const larguraColuna = (margemDireita - margemEsquerda) / 2;
-        let y = 20;
+        // Configurações de Cores
+        const primaryColor = [44, 62, 80]; // Azul Escuro
+        const secondaryColor = [52, 152, 219]; // Azul Claro
+        const lightGray = [245, 245, 245]; // Cinza Claro
+        const darkGray = [100, 100, 100]; // Cinza Escuro
 
-        // Funções auxiliares para o PDF
-        function addTitulo(texto, cor = [44, 62, 80]) {
-            doc.setFontSize(14);
-            doc.setFont('helvetica', 'bold');
-            doc.setTextColor(cor[0], cor[1], cor[2]);
-            doc.text(texto, margemEsquerda, y);
-            y += 8;
-        }
+        // Dimensões A4
+        const pageWidth = 210;
+        const pageHeight = 297;
+        const margin = 15;
+        const contentWidth = pageWidth - (margin * 2);
 
-        function addLinha() {
-            doc.setDrawColor(212, 175, 55); // Dourado
-            doc.setLineWidth(0.5);
-            doc.line(margemEsquerda, y, margemDireita, y);
-            y += 5;
-        }
+        // --- PÁGINA 1: FORMULÁRIO ---
 
-        function addTabela(linhas, colunas) {
-            // linhas: array de objetos com label e valor
-            // colunas: número de colunas (1 ou 2)
-            const alturaLinha = 8;
-            const padding = 3;
-            
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'normal');
-            doc.setTextColor(0, 0, 0);
-
-            if (colunas === 2) {
-                for (let i = 0; i < linhas.length; i += 2) {
-                    // Primeira coluna
-                    doc.setFont('helvetica', 'bold');
-                    doc.text(linhas[i].label + ':', margemEsquerda, y);
-                    doc.setFont('helvetica', 'normal');
-                    doc.text(String(linhas[i].valor), margemEsquerda + 35, y);
-                    
-                    // Segunda coluna (se existir)
-                    if (linhas[i + 1]) {
-                        doc.setFont('helvetica', 'bold');
-                        doc.text(linhas[i + 1].label + ':', margemEsquerda + 95, y);
-                        doc.setFont('helvetica', 'normal');
-                        doc.text(String(linhas[i + 1].valor), margemEsquerda + 130, y);
-                    }
-                    
-                    y += alturaLinha;
-                    
-                    // Verificar se precisa de nova página
-                    if (y > 280) {
-                        doc.addPage();
-                        y = 20;
-                    }
-                }
-            } else {
-                linhas.forEach(item => {
-                    doc.setFont('helvetica', 'bold');
-                    doc.text(item.label + ':', margemEsquerda, y);
-                    doc.setFont('helvetica', 'normal');
-                    
-                    // Quebrar texto longo
-                    const valor = String(item.valor);
-                    const linhasValor = doc.splitTextToSize(valor, 150);
-                    
-                    doc.text(linhasValor[0], margemEsquerda + 45, y);
-                    y += alturaLinha;
-                    
-                    // Linhas adicionais do valor
-                    for (let i = 1; i < linhasValor.length; i++) {
-                        doc.text(linhasValor[i], margemEsquerda + 45, y);
-                        y += alturaLinha;
-                    }
-                    
-                    // Verificar página
-                    if (y > 280) {
-                        doc.addPage();
-                        y = 20;
-                    }
-                });
-            }
-            y += 3;
-        }
-
-        // CABEÇALHO
-        doc.setFontSize(20);
+        // Cabeçalho
+        doc.setFillColor(...primaryColor);
+        doc.rect(0, 0, pageWidth, 30, 'F');
+        
+        doc.setTextColor(255, 255, 255);
         doc.setFont('helvetica', 'bold');
-        doc.setTextColor(44, 62, 80);
-        doc.text('REGISTRO DE APLICAÇÃO DE TOXINA BOTULÍNICA', 105, y, { align: 'center' });
-        y += 8;
+        doc.setFontSize(22);
+        doc.text('REGISTRO CLÍNICO', margin, 12);
         
-        doc.setFontSize(12);
+        doc.setFontSize(14);
         doc.setFont('helvetica', 'normal');
-        doc.setTextColor(127, 140, 141);
-        doc.text('Harmonização Orofacial - Documento Clínico', 105, y, { align: 'center' });
-        y += 5;
-        
-        doc.setDrawColor(212, 175, 55);
-        doc.setLineWidth(0.5);
-        doc.line(20, y, 190, y);
-        y += 10;
+        doc.text('APLICAÇÃO DE TOXINA BOTULÍNICA', margin, 20);
 
-        // DATA DO DOCUMENTO
         doc.setFontSize(10);
-        doc.setFont('helvetica', 'italic');
-        doc.setTextColor(100, 100, 100);
-        doc.text(`Documento gerado em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`, 190, y, { align: 'right' });
-        y += 5;
+        doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, pageWidth - margin, 12, { align: 'right' });
+        doc.text(`Hora: ${new Date().toLocaleTimeString('pt-BR')}`, pageWidth - margin, 20, { align: 'right' });
 
-        // 1. DADOS DO PACIENTE
-        addTitulo('1. DADOS DO PACIENTE');
-        addTabela([
-            { label: 'Nome', valor: dados.paciente.nome },
-            { label: 'CPF', valor: dados.paciente.cpf },
-            { label: 'Nascimento', valor: dados.paciente.nascimento },
-            { label: 'Idade', valor: dados.paciente.idade + ' anos' },
-            { label: 'Telefone', valor: dados.paciente.telefone },
-            { label: 'Email', valor: dados.paciente.email }
-        ], 2);
+        let y = 40;
+
+        // Função para desenhar caixa de seção
+        function drawSectionBox(title, height, yPos) {
+            doc.setFillColor(...lightGray);
+            doc.rect(margin, yPos, contentWidth, height, 'F');
+            
+            doc.setFillColor(...secondaryColor);
+            doc.rect(margin, yPos, 3, height, 'F'); // Barra lateral azul
+            
+            doc.setTextColor(...primaryColor);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(11);
+            doc.text(title.toUpperCase(), margin + 5, yPos + 6);
+        }
+
+        // 1. DADOS DO PACIENTE E PROFISSIONAL (Lado a Lado)
+        const boxHeight = 45;
         
-        addTabela([
-            { label: 'Endereço', valor: dados.paciente.endereco }
-        ], 1);
-        addLinha();
-
-        // 2. DADOS DO PROFISSIONAL
-        addTitulo('2. DADOS DO PROFISSIONAL');
-        addTabela([
-            { label: 'Nome', valor: dados.profissional.nome },
-            { label: 'Registro', valor: dados.profissional.registro },
-            { label: 'Especialidade', valor: dados.profissional.especialidade },
-            { label: 'Clínica', valor: dados.profissional.clinica }
-        ], 2);
+        // Coluna 1: Paciente
+        doc.setFillColor(...lightGray);
+        doc.rect(margin, y, (contentWidth / 2) - 2, boxHeight, 'F');
+        doc.setFillColor(...secondaryColor);
+        doc.rect(margin, y, 1, boxHeight, 'F');
         
-        addTabela([
-            { label: 'Endereço da Clínica', valor: dados.profissional.endereco }
-        ], 1);
-        addLinha();
-
-        // 3. HISTÓRICO CLÍNICO
-        addTitulo('3. HISTÓRICO CLÍNICO');
-        addTabela([
-            { label: 'Alergias', valor: dados.historico.alergias },
-            { label: 'Medicamentos', valor: dados.historico.medicamentos },
-            { label: 'Doenças Crônicas', valor: dados.historico.doencas },
-            { label: 'Já fez Botox?', valor: dados.historico.historicoBotox },
-            { label: 'Reações Adversas', valor: dados.historico.reacoes }
-        ], 1);
-        addLinha();
-
-        // 4. REGISTRO DA APLICAÇÃO
-        addTitulo('4. REGISTRO DA APLICAÇÃO');
-        addTabela([
-            { label: 'Marca', valor: dados.aplicacao.marca },
-            { label: 'Lote', valor: dados.aplicacao.lote },
-            { label: 'Validade', valor: dados.aplicacao.validade },
-            { label: 'Total UI', valor: dados.aplicacao.qtdTotal }
-        ], 2);
-
-        // Tabela de distribuição por região
-        y += 2;
+        doc.setTextColor(...primaryColor);
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(11);
-        doc.text('DISTRIBUIÇÃO POR REGIÃO (UI)', margemEsquerda, y);
-        y += 7;
-
-        // Desenhar tabela de regiões
-        const colunas = ['Região', 'UI', 'Região', 'UI'];
-        const posicoes = [margemEsquerda, margemEsquerda + 40, margemEsquerda + 95, margemEsquerda + 135];
+        doc.setFontSize(10);
+        doc.text('DADOS DO PACIENTE', margin + 4, y + 5);
         
-        // Cabeçalho da tabela
-        doc.setFillColor(240, 240, 240);
-        doc.rect(margemEsquerda, y - 4, 170, 6, 'F');
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(9);
-        colunas.forEach((col, i) => {
-            doc.text(col, posicoes[i], y);
-        });
-        y += 6;
-
-        // Dados da tabela
+        const pacNome = document.getElementById('pacNome').value;
+        const pacCPF = document.getElementById('pacCPF').value;
+        const pacNasc = document.getElementById('pacNasc').value;
+        const pacTel = document.getElementById('pacTel').value;
+        
         doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        doc.setTextColor(0, 0, 0);
+        doc.text(`Nome: ${pacNome}`, margin + 4, y + 12);
+        doc.text(`CPF: ${pacCPF}`, margin + 4, y + 18);
+        doc.text(`Nasc: ${pacNasc ? new Date(pacNasc).toLocaleDateString('pt-BR') : ''}`, margin + 4, y + 24);
+        doc.text(`Tel: ${pacTel}`, margin + 4, y + 30);
+
+        // Coluna 2: Profissional
+        const col2X = margin + (contentWidth / 2) + 2;
+        doc.setFillColor(...lightGray);
+        doc.rect(col2X, y, (contentWidth / 2) - 2, boxHeight, 'F');
+        doc.setFillColor(...secondaryColor);
+        doc.rect(col2X, y, 1, boxHeight, 'F');
+        
+        doc.setTextColor(...primaryColor);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10);
+        doc.text('DADOS DO PROFISSIONAL', col2X + 4, y + 5);
+        
+        const profNome = document.getElementById('profNome').value;
+        const profRegistro = document.getElementById('profRegistro').value;
+        const profClinica = document.getElementById('profClinica').value;
+        
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        doc.setTextColor(0, 0, 0);
+        doc.text(`Nome: ${profNome}`, col2X + 4, y + 12);
+        doc.text(`Registro: ${profRegistro}`, col2X + 4, y + 18);
+        doc.text(`Clínica: ${profClinica}`, col2X + 4, y + 24);
+
+        y += boxHeight + 5;
+
+        // 2. HISTÓRICO CLÍNICO
+        const histHeight = 35;
+        drawSectionBox('Histórico Clínico', histHeight, y);
+        
+        const alergias = document.getElementById('alergias').value || 'Nega';
+        const medicamentos = document.getElementById('medicamentos').value || 'Nega';
+        const doencas = document.getElementById('doencas').value || 'Nega';
+        const historicoBotox = document.getElementById('historicoBotox').value || 'Não informado';
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(0, 0, 0);
+        
+        // Grid de histórico
+        doc.text(`Alergias: ${alergias}`, margin + 5, y + 12);
+        doc.text(`Medicamentos: ${medicamentos}`, margin + 5, y + 18);
+        doc.text(`Doenças: ${doencas}`, margin + 5, y + 24);
+        doc.text(`Histórico Botox: ${historicoBotox}`, margin + 5, y + 30);
+
+        y += histHeight + 5;
+
+        // 3. REGISTRO DA APLICAÇÃO
+        const appHeight = 70;
+        drawSectionBox('Registro da Aplicação', appHeight, y);
+        
+        const marca = document.getElementById('marca').value;
+        const lote = document.getElementById('lote').value;
+        const validade = document.getElementById('validade').value;
+        const qtdTotal = document.getElementById('qtdTotal').value;
+
+        doc.setFontSize(9);
+        doc.text(`Marca: ${marca} | Lote: ${lote} | Validade: ${validade ? new Date(validade).toLocaleDateString('pt-BR') : ''} | Total: ${qtdTotal} UI`, margin + 5, y + 12);
+
+        // Tabela de Regiões
+        const tableY = y + 18;
+        const colWidth = contentWidth / 4;
+        
+        doc.setFillColor(230, 230, 230);
+        doc.rect(margin + 5, tableY, contentWidth - 10, 6, 'F');
+        doc.setFont('helvetica', 'bold');
+        doc.text('Mapeamento de Unidades (UI)', margin + 7, tableY + 4);
+
         const regioes = [
-            ['Testa (Frontal)', dados.regioes.testa + ' UI', 'Glabela', dados.regioes.glabela + ' UI'],
-            ['Pés de Galinha (Dir)', dados.regioes.peDir + ' UI', 'Pés de Galinha (Esq)', dados.regioes.peEsq + ' UI'],
-            ['Masseter (Dir)', dados.regioes.masseterDir + ' UI', 'Masseter (Esq)', dados.regioes.masseterEsq + ' UI'],
-            ['Mento', dados.regioes.mento + ' UI', 'Outras', dados.regioes.outras]
+            { l: 'Testa', v: document.getElementById('regTesta').value },
+            { l: 'Glabela', v: document.getElementById('regGlabela').value },
+            { l: 'Pés Galinha (D)', v: document.getElementById('regPeDir').value },
+            { l: 'Pés Galinha (E)', v: document.getElementById('regPeEsq').value },
+            { l: 'Masseter (D)', v: document.getElementById('regMasseterDir').value },
+            { l: 'Masseter (E)', v: document.getElementById('regMasseterEsq').value },
+            { l: 'Mento', v: document.getElementById('regMento').value },
+            { l: 'Outras', v: document.getElementById('regOutras').value }
         ];
 
-        regioes.forEach(linha => {
-            doc.text(linha[0], posicoes[0], y);
-            doc.text(linha[1], posicoes[1], y);
-            doc.text(linha[2], posicoes[2], y);
-            doc.text(linha[3], posicoes[3], y);
-            y += 6;
-            
-            if (y > 280) {
-                doc.addPage();
-                y = 20;
+        doc.setFont('helvetica', 'normal');
+        let rY = tableY + 10;
+        let rX = margin + 5;
+        
+        regioes.forEach((reg, i) => {
+            if (i > 0 && i % 2 === 0) { // 2 colunas
+                rY += 6;
+                rX = margin + 5;
+            } else if (i % 2 !== 0) {
+                rX = margin + 5 + (contentWidth / 2);
             }
+            
+            doc.text(`${reg.l}: ${reg.v || '0'} UI`, rX, rY);
         });
-        y += 5;
-        addLinha();
+
+        y += appHeight + 5;
 
         // 5. OBSERVAÇÕES
-        addTitulo('5. OBSERVAÇÕES DO PROCEDIMENTO');
-        addTabela([
-            { label: '', valor: dados.observacoes }
-        ], 1);
-        addLinha();
-
-        // 6. TERMO DE CONSENTIMENTO
-        addTitulo('6. TERMO DE CONSENTIMENTO');
-        doc.setFontSize(9);
+        const obsHeight = 30;
+        drawSectionBox('Observações', obsHeight, y);
+        const observacoes = document.getElementById('observacoes').value || 'Sem observações.';
         doc.setFont('helvetica', 'normal');
-        doc.setTextColor(80, 80, 80);
-        
-        const termo = [
-            'Declaro que li, compreendi e aceito os termos do consentimento livre e esclarecido para',
-            'aplicação de toxina botulínica. Fui informado(a) sobre a natureza do procedimento, resultados',
-            'esperados, riscos, efeitos adversos possíveis e orientações pós-procedimento. Tive a',
-            'oportunidade de esclarecer todas as minhas dúvidas e as informações prestadas no histórico',
-            'clínico são verdadeiras.'
-        ];
-        
-        termo.forEach(linha => {
-            doc.text(linha, margemEsquerda, y);
-            y += 5;
-        });
-        y += 5;
+        doc.setFontSize(8);
+        const splitObs = doc.splitTextToSize(observacoes, contentWidth - 10);
+        doc.text(splitObs, margin + 5, y + 12);
 
-        // ASSINATURAS
+        // --- PÁGINA 2: TERMO DE CONSENTIMENTO ---
+        doc.addPage();
+
+        // Cabeçalho Pág 2
+        doc.setFillColor(...primaryColor);
+        doc.rect(0, 0, pageWidth, 30, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(18);
+        doc.text('TERMO DE CONSENTIMENTO', margin, 18);
+
+        y = 45;
+
+        doc.setTextColor(0, 0, 0);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        
+        const termoTexto = document.querySelector('.consent-box').innerText;
+        // Remove quebras de linha excessivas do innerText
+        const cleanTermo = termoTexto.replace(/\n\s*\n/g, '\n\n');
+        
+        const splitTermo = doc.splitTextToSize(cleanTermo, contentWidth);
+        doc.text(splitTermo, margin, y);
+
+        // Assinaturas (Rodapé Pág 2)
+        y = pageHeight - 50;
+
         doc.setLineWidth(0.5);
-        doc.line(margemEsquerda, y, margemEsquerda + 70, y);
-        doc.line(margemDireita - 70, y, margemDireita, y);
-        
-        y += 5;
+        doc.line(margin, y, margin + 80, y);
         doc.setFontSize(9);
-        doc.setFont('helvetica', 'normal');
-        doc.text('Assinatura do Paciente', margemEsquerda, y);
-        doc.text('Assinatura do Profissional', margemDireita - 70, y);
+        doc.text('Assinatura do Paciente', margin, y + 5);
+        
+        doc.line(pageWidth - margin - 80, y, pageWidth - margin, y);
+        doc.text('Assinatura do Profissional', pageWidth - margin - 80, y + 5);
 
-        // RODAPÉ
+        // Rodapé final
         doc.setFontSize(8);
         doc.setTextColor(150, 150, 150);
-        doc.text('Documento válido como registro clínico', 105, 285, { align: 'center' });
+        doc.text(`Documento gerado em: ${new Date().toLocaleString('pt-BR')}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
 
-        // Salvar PDF
-        const nomeArquivo = `toxina_${dados.paciente.nome.split(' ')[0]}_${new Date().toISOString().slice(0,10)}.pdf`;
-        doc.save(nomeArquivo);
-    }
-
-    // Event Listeners
-    btnGerarPDF.addEventListener('click', gerarPDF);
-
-    btnLimpar.addEventListener('click', function() {
-        if (confirm('Tem certeza que deseja limpar todos os dados do formulário?')) {
-            form.reset();
-            // Remover bordas vermelhas
-            document.querySelectorAll('input, textarea').forEach(campo => {
-                campo.style.borderColor = '';
-            });
-        }
-    });
-
-    // Máscara para CPF
-    document.getElementById('pacCPF').addEventListener('input', function(e) {
-        let value = e.target.value.replace(/\D/g, '');
-        if (value.length <= 11) {
-            value = value.replace(/(\d{3})(\d)/, '$1.$2');
-            value = value.replace(/(\d{3})(\d)/, '$1.$2');
-            value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
-            e.target.value = value;
-        }
-    });
-
-    // Máscara para Telefone
-    document.getElementById('pacTel').addEventListener('input', function(e) {
-        let value = e.target.value.replace(/\D/g, '');
-        if (value.length <= 11) {
-            value = value.replace(/(\d{2})(\d)/, '($1) $2');
-            value = value.replace(/(\d{5})(\d)/, '$1-$2');
-            e.target.value = value;
-        }
-    });
-
-    // Calcular total automático
-    const camposUI = ['regTesta', 'regGlabela', 'regPeDir', 'regPeEsq', 'regMasseterDir', 'regMasseterEsq', 'regMento'];
-    camposUI.forEach(id => {
-        document.getElementById(id).addEventListener('input', function() {
-            let total = 0;
-            camposUI.forEach(campoId => {
-                const valor = parseInt(document.getElementById(campoId).value) || 0;
-                total += valor;
-            });
-            document.getElementById('qtdTotal').value = total;
-        });
+        doc.save('registro-toxina-botulinica.pdf');
     });
 });
