@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Validação básica
         if (!form.checkValidity()) {
-            alert('Por favor, preencha todos os campos obrigatórios e aceite o termo de consentimento.');
+            alert('Por favor, preencha todos os campos obrigatórios.');
             form.reportValidity();
             return;
         }
