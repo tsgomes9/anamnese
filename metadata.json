@@ -1,0 +1,5 @@
+{
+  "name": "Registro Toxina Botulínica",
+  "description": "Sistema de registro clínico e geração de documentos para aplicação de toxina botulínica.",
+  "requestFramePermissions": []
+}

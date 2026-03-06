@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Toxina Botulínica - Harmonização Orofacial</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Biblioteca jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Registro de Aplicação de Toxina Botulínica</h1>
+            <h2>Harmonização Orofacial - Sistema Clínico</h2>
+        </header>
+
+        <!-- Imagem Ilustrativa -->
+        <div class="anatomy-section">
+            <img src="https://ik.imagekit.io/exzzhibun/Coordenada%20Concursos/Anamnese/mapa_anatomico.jpg" alt="Mapa Anatômico Facial" class="anatomy-img" referrerPolicy="no-referrer">
+            <p class="anatomy-caption">Mapa de referência anatômica para aplicação.</p>
+        </div>
+
+        <form id="botoxForm">
+            <!-- SEÇÃO 1: DADOS DO PACIENTE -->
+            <fieldset>
+                <legend>1. Dados do Paciente</legend>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="pacNome">Nome Completo *</label>
+                        <input type="text" id="pacNome" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="pacCPF">CPF *</label>
+                        <input type="text" id="pacCPF" required placeholder="000.000.000-00">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="pacNasc">Data de Nascimento *</label>
+                        <input type="date" id="pacNasc" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="pacTel">Telefone *</label>
+                        <input type="tel" id="pacTel" required placeholder="(00) 00000-0000">
+                    </div>
+                    <div class="form-group">
+                        <label for="pacEmail">Email</label>
+                        <input type="email" id="pacEmail">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="pacEndereco">Endereço Completo</label>
+                    <input type="text" id="pacEndereco">
+                </div>
+            </fieldset>
+
+            <!-- SEÇÃO 2: DADOS DO PROFISSIONAL -->
+            <fieldset>
+                <legend>2. Dados do Profissional</legend>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="profNome">Nome do Profissional *</label>
+                        <input type="text" id="profNome" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="profEspecialidade">Especialidade</label>
+                        <input type="text" id="profEspecialidade" placeholder="Ex: Biomédico Esteta, Dentista">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="profRegistro">Nº Conselho (CRO/CRM/Outro) *</label>
+                        <input type="text" id="profRegistro" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="profClinica">Nome da Clínica</label>
+                        <input type="text" id="profClinica">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="profEndereco">Endereço da Clínica</label>
+                    <input type="text" id="profEndereco">
+                </div>
+            </fieldset>
+
+            <!-- SEÇÃO 3: HISTÓRICO CLÍNICO -->
+            <fieldset>
+                <legend>3. Histórico Clínico</legend>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="alergias">Possui alergias? (Medicamentos, látex, ovo, etc)</label>
+                        <textarea id="alergias" placeholder="Descreva ou digite 'Nega'"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="medicamentos">Faz uso de medicamentos contínuos?</label>
+                        <textarea id="medicamentos" placeholder="Quais?"></textarea>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="doencas">Possui doenças crônicas ou autoimunes?</label>
+                    <textarea id="doencas" placeholder="Ex: Diabetes, Hipertensão, Lúpus..."></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="historicoBotox">Já realizou aplicação de toxina botulínica antes?</label>
+                        <textarea id="historicoBotox" placeholder="Quando foi a última vez?"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="reacoes">Já teve reações adversas a procedimentos estéticos?</label>
+                        <textarea id="reacoes" placeholder="Descreva se houver"></textarea>
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- SEÇÃO 4: REGISTRO DA APLICAÇÃO -->
+            <fieldset>
+                <legend>4. Registro da Aplicação</legend>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="marca">Marca da Toxina *</label>
+                        <input type="text" id="marca" required placeholder="Ex: Botox, Dysport, Xeomin, Botulift">
+                    </div>
+                    <div class="form-group">
+                        <label for="lote">Lote do Produto *</label>
+                        <input type="text" id="lote" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="validade">Validade *</label>
+                        <input type="date" id="validade" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="qtdTotal">Qtd Total Utilizada (UI) *</label>
+                        <input type="number" id="qtdTotal" required placeholder="Ex: 50">
+                    </div>
+                </div>
+
+                <h3 style="margin-bottom: 15px; color: #555; font-size: 1rem;">Mapeamento de Unidades por Região (UI)</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="regTesta">Testa (Frontal)</label>
+                        <input type="number" id="regTesta" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="regGlabela">Glabela</label>
+                        <input type="number" id="regGlabela" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="regPeDir">Pés de Galinha (Dir)</label>
+                        <input type="number" id="regPeDir" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="regPeEsq">Pés de Galinha (Esq)</label>
+                        <input type="number" id="regPeEsq" placeholder="0">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="regMasseterDir">Masseter (Dir)</label>
+                        <input type="number" id="regMasseterDir" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="regMasseterEsq">Masseter (Esq)</label>
+                        <input type="number" id="regMasseterEsq" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="regMento">Mento</label>
+                        <input type="number" id="regMento" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="regOutras">Outras Regiões</label>
+                        <input type="text" id="regOutras" placeholder="Ex: Bunny Lines: 2U">
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- SEÇÃO 5: OBSERVAÇÕES -->
+            <fieldset>
+                <legend>5. Observações do Procedimento</legend>
+                <div class="form-group">
+                    <label for="observacoes">Notas Clínicas</label>
+                    <textarea id="observacoes" style="height: 150px;" placeholder="Descreva diluição, técnica utilizada, intercorrências ou orientações específicas passadas ao paciente."></textarea>
+                </div>
+            </fieldset>
+
+            <!-- SEÇÃO 6: TERMO DE CONSENTIMENTO -->
+            <fieldset>
+                <legend>6. Termo de Consentimento</legend>
+                <div class="consent-box">
+                    <p><strong>TERMO DE CONSENTIMENTO LIVRE E ESCLARECIDO PARA APLICAÇÃO DE TOXINA BOTULÍNICA</strong></p>
+                    <br>
+                    <p>1. <strong>NATUREZA DO PROCEDIMENTO:</strong> Declaro que fui informado(a) que a toxina botulínica é uma substância biológica que provoca o relaxamento temporário da musculatura onde é injetada, suavizando rugas e linhas de expressão dinâmicas.</p>
+                    <br>
+                    <p>2. <strong>RESULTADOS:</strong> Compreendo que os resultados não são imediatos, iniciando-se geralmente entre 3 a 5 dias após a aplicação, com pico de ação em 15 dias. O efeito é temporário, durando em média de 3 a 6 meses, variando conforme o metabolismo individual.</p>
+                    <br>
+                    <p>3. <strong>RISCOS E EFEITOS ADVERSOS:</strong> Fui alertado(a) sobre possíveis efeitos colaterais transitórios, tais como: pequenos hematomas, inchaço (edema), vermelhidão (eritema), dor de cabeça leve, sensação de peso na testa ou pálpebras e, raramente, ptose palpebral (queda da pálpebra) ou assimetria facial, que geralmente são reversíveis.</p>
+                    <br>
+                    <p>4. <strong>ORIENTAÇÕES PÓS-PROCEDIMENTO:</strong> Comprometo-me a seguir as orientações: não massagear a área tratada, não deitar-se pelas próximas 4 horas, evitar exercícios físicos intensos por 24 horas e usar protetor solar.</p>
+                    <br>
+                    <p>5. <strong>RETOQUE:</strong> Entendo que uma revisão pode ser necessária após 15 dias para eventuais ajustes, e que novas aplicações antes de 3 meses não são recomendadas para evitar resistência ao produto (efeito vacina).</p>
+                    <br>
+                    <p>Declaro que tive a oportunidade de esclarecer todas as minhas dúvidas, que as informações prestadas no histórico clínico são verdadeiras e que não omiti nenhum dado sobre minha saúde.</p>
+                </div>
+                
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="consentimento" required>
+                    <label for="consentimento">Declaro que li, compreendi e aceito os termos acima, autorizando a realização do procedimento.</label>
+                </div>
+            </fieldset>
+
+            <!-- ASSINATURA -->
+            <div class="signature-section">
+                <div class="signature-block">
+                    <div class="signature-line"></div>
+                    <p>Assinatura do Paciente</p>
+                </div>
+                <div class="signature-block">
+                    <div class="signature-line"></div>
+                    <p>Assinatura do Profissional</p>
+                </div>
+            </div>
+
+            <!-- BOTÕES -->
+            <div class="actions">
+                <button type="button" id="btnLimpar" class="btn btn-secondary">Limpar Formulário</button>
+                <button type="submit" id="btnGerarPDF" class="btn btn-primary">Gerar Documento PDF</button>
+            </div>
+        </form>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
